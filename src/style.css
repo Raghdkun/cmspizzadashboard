@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #E44217;
+  --primary-hover: #C93815;
+}
+
+@layer base {
+  body {
+    @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-white;
+  }
+
+  /* Improve focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-neutral-900;
+  }
+
+  /* Smooth scrolling */
+  html {
+    @apply scroll-smooth;
+  }
+}
+
+@layer components {
+  /* Form Controls */
+  .form-input,
+  .form-select,
+  .form-textarea,
+  .form-multiselect {
+    @apply w-full px-4 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-600 
+           text-neutral-900 dark:text-white
+           bg-white dark:bg-neutral-700
+           placeholder-neutral-400 dark:placeholder-neutral-500
+           shadow-sm
+           transition duration-200
+           focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Form Labels */
+  .form-label {
+    @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1;
+  }
+
+  /* Form Hints */
+  .form-hint {
+    @apply mt-1 text-sm text-neutral-500 dark:text-neutral-400;
+  }
+
+  /* Form Errors */
+  .form-error {
+    @apply mt-1 text-sm text-red-600 dark:text-red-400;
+  }
+
+  /* Form Groups */
+  .form-group {
+    @apply mb-6;
+  }
+
+  /* Checkbox and Radio */
+  .form-checkbox,
+  .form-radio {
+    @apply h-4 w-4 text-primary-600 border-neutral-300 dark:border-neutral-600
+           focus:ring-primary-500 dark:focus:ring-primary-400
+           bg-white dark:bg-neutral-700;
+  }
+
+  .form-radio {
+    @apply rounded-full;
+  }
+
+  .form-checkbox {
+    @apply rounded;
+  }
+
+  /* Switch */
+  .form-switch {
+    @apply relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+           transition-colors duration-200 ease-in-out
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .form-switch[aria-checked="true"] {
+    @apply bg-primary-600;
+  }
+
+  .form-switch[aria-checked="false"] {
+    @apply bg-neutral-200 dark:bg-neutral-700;
+  }
+
+  .form-switch-inner {
+    @apply pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
+           transition duration-200 ease-in-out;
+  }
+
+  .form-switch[aria-checked="true"] .form-switch-inner {
+    @apply translate-x-5;
+  }
+
+  .form-switch[aria-checked="false"] .form-switch-inner {
+    @apply translate-x-0;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 
+           transition-all duration-200 hover:border-primary-500 dark:hover:border-primary-500;
+  }
+
+  .card-header {
+    @apply p-6 border-b border-neutral-200 dark:border-neutral-700;
+  }
+
+  .card-body {
+    @apply p-6;
+  }
+
+  .card-footer {
+    @apply p-6 border-t border-neutral-200 dark:border-neutral-700;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+  }
+
+  .badge-error {
+    @apply bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  /* Tables */
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-700;
+  }
+
+  .table {
+    @apply min-w-full divide-y divide-neutral-200 dark:divide-neutral-700;
+  }
+
+  .table th {
+    @apply px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider;
+  }
+
+  .table td {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-neutral-900 dark:text-white;
+  }
+
+  .table tr {
+    @apply hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors;
+  }
+}
