@@ -1,6 +1,6 @@
-// Update or add the TeamMember interface
+// Update the TeamMember interface
 export interface TeamMember {
-  id: number; // Change from string to number
+  id: number | string; // Allow both number and string
   name: string;
   role: string;
   description: string;

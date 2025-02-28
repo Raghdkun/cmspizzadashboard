@@ -276,7 +276,7 @@ const handleClickOutside = (event: Event) => {
     />
     <EditTeamMemberModal
       v-if="showEditTeamMemberModal && selectedItem"
-      :member="selectedItem as TeamMember"
+      :member="{...selectedItem as TeamMember, id: Number((selectedItem as TeamMember).id)}"
       @close="showEditTeamMemberModal = false"
       @update="handleEditTeamMember"
     />
