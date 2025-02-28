@@ -111,12 +111,12 @@ const handleSubmit = async () => {
                 Remember me
               </span>
             </label>
-            <router-link
+            <!-- <router-link
               :to="{ name: 'forgot-password' }"
               class="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Forgot password?
-            </router-link>
+            </router-link> -->
           </div>
 
           <!-- Error message (local error) -->

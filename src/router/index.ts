@@ -18,20 +18,23 @@ const router = createRouter({
           meta: { guestOnly: true },
           component: () => import('../views/auth/LoginView.vue'),
         },
-        {
-          path: 'register',
-          name: 'register',
-          meta: { guestOnly: true },
-          component: () => import('../views/auth/RegisterView.vue'),
-        },
+        // Register route commented out
+        // {
+        //   path: 'register',
+        //   name: 'register',
+        //   meta: { guestOnly: true },
+        //   component: () => import('../views/auth/RegisterView.vue'),
+        // },
+        
+        // Add a catch-all route for the forgot-password path to redirect to login
         {
           path: 'forgot-password',
-          name: 'forgot-password',
-          meta: { guestOnly: true },
-          component: () => import('../views/auth/ForgotPasswordView.vue'),
+          redirect: '/auth/login'
         },
       ],
     },
+    
+    // Rest of your routes remain unchanged
     {
       path: '/dashboard',
       component: () => import('../layouts/DashboardLayout.vue'),
