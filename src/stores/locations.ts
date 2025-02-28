@@ -1,6 +1,8 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { LocationAPIResponse, } from '../types/locations';
+const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
+
 
 const mockLocations: any[] = []; 
 // Types
@@ -132,7 +134,19 @@ export const useLocationsStore = defineStore('locations', () => {
     error.value = null;
   
     try {
-      const response = await fetch('/api/v1/locations');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token not found in localStorage');
+      }
+  
+      const response = await fetch(`${apiUrl}/api/v1/admin/locations`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      });
+  
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -243,7 +257,7 @@ export const useLocationsStore = defineStore('locations', () => {
       };
   
       // Make the POST request to the API with the token in the headers
-      const response = await fetch('/api/v1/locations', {
+      const response = await fetch(`${apiUrl}/api/v1/locations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -302,7 +316,7 @@ export const useLocationsStore = defineStore('locations', () => {
      }
  
     // Make the PATCH request using fetch
-    const response = await fetch(`/api/v1/locations/${id}`, {
+    const response = await fetch(`${apiUrl}/api/v1/locations/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -321,7 +335,7 @@ export const useLocationsStore = defineStore('locations', () => {
     
     // Convert the API response to your local Location shape:
     const updatedLocation: Location = {
-      id: updatedApiLocation.id,
+      id: updatedApiLocation.id.toString(),
       name: updatedApiLocation.name,
       address: updatedApiLocation.street,
       city: updatedApiLocation.city,
@@ -361,7 +375,7 @@ export const useLocationsStore = defineStore('locations', () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Token not found in localStorage');
 
-      const response = await fetch(`/api/v1/locations/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/locations/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

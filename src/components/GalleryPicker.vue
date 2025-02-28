@@ -34,7 +34,7 @@ onMounted(async () => {
 const handleSearch = async () => {
   try {
     loading.value = true;
-    await galleryStore.fetchImages(search.value);
+    await galleryStore.fetchImages({ search: search.value });
   } catch (e) {
     error.value = 'Failed to search images';
     console.error(e);
@@ -99,10 +99,10 @@ const handleSelect = (url: string) => {
             v-for="image in galleryStore.images"
             :key="image.id"
             class="group relative aspect-square rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 cursor-pointer hover:border-primary-500 dark:hover:border-primary-500"
-            @click="handleSelect(image.url)"
+            @click="handleSelect(image.file_path)"
           >
             <img
-              :src="image.url"
+              :src="image.file_path"
               :alt="image.name"
               class="w-full h-full object-cover"
             />

@@ -15,7 +15,7 @@ const showAddModal = ref(false);
 const showEditModal = ref(false);
 const showDeleteConfirm = ref(false);
 const selectedUser = ref<User | null>(null);
-const activeDropdown = ref<string | null>(null);
+const activeDropdown = ref<number | null>(null);
 const copiedEmail = ref<string | null>(null);
 const searchQuery = ref('');
 const exportLoading = ref(false);
@@ -26,7 +26,7 @@ onMounted(async () => {
   document.addEventListener('click', handleClickOutside);
 });
 
-// Remove event listener on component unmount
+// Remove event listener on unmount
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
@@ -36,7 +36,7 @@ const filteredUsers = computed(() => {
   if (!searchQuery.value) return usersStore.users;
   
   const query = searchQuery.value.toLowerCase();
-  return usersStore.users.filter(user => 
+  return usersStore.users.filter(user =>
     user.name.toLowerCase().includes(query) ||
     user.email.toLowerCase().includes(query) ||
     user.role.toLowerCase().includes(query)
@@ -50,7 +50,7 @@ const handleUserAdded = async () => {
 };
 
 // Toggle dropdown for a specific user
-const toggleDropdown = (event: Event, userId: string) => {
+const toggleDropdown = (event: Event, userId: number) => {
   event.stopPropagation();
   activeDropdown.value = activeDropdown.value === userId ? null : userId;
 };
@@ -174,7 +174,7 @@ const handleClickOutside = (event: Event) => {
 
     <!-- Users table -->
     <div v-else class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700">
-      <div class="overflow-x-auto">
+      <div>
         <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
           <thead>
             <tr class="bg-neutral-50 dark:bg-neutral-800">
@@ -185,10 +185,7 @@ const handleClickOutside = (event: Event) => {
                 Role
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                Status
-              </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
-                Last Login
+                Last Update
               </th>
               <th class="px-6 py-3 text-right text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                 Actions
@@ -230,27 +227,16 @@ const handleClickOutside = (event: Event) => {
                 <span
                   class="px-2 py-1 text-xs font-medium rounded-full"
                   :class="{
-                    'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400': user.role === 'admin',
-                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': user.role === 'manager',
-                    'bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-neutral-400': user.role === 'user'
+                    'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400': user.role.toLowerCase() === 'admin',
+                    'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': user.role.toLowerCase() === 'manager',
+                    'bg-neutral-100 text-neutral-800 dark:bg-neutral-900/20 dark:text-neutral-400': user.role.toLowerCase() === 'user'
                   }"
                 >
-                  {{ user.role.charAt(0).toUpperCase() + user.role.slice(1) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  class="px-2 py-1 text-xs font-medium rounded-full"
-                  :class="{
-                    'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': user.status === 'active',
-                    'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': user.status === 'inactive'
-                  }"
-                >
-                  {{ user.status.charAt(0).toUpperCase() + user.status.slice(1) }}
+                  {{ user.role }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                {{ user.lastLogin }}
+                {{ user.updated_at }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="relative">

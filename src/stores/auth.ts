@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { defineStore } from "pinia";
+const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
 
 // Define User interface
 interface User {
@@ -27,7 +28,7 @@ export const useAuthStore = defineStore("auth", () => {
    */
   async function login(formData: Record<string, any>): Promise<void> {
     try {
-      const res = await fetch("/api/v1/login", {
+      const res = await fetch(`${apiUrl}/api/v1/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -63,7 +64,7 @@ export const useAuthStore = defineStore("auth", () => {
    */
   async function register(formData: Record<string, any>): Promise<void> {
     try {
-      const res = await fetch("/api/v1/register", {
+      const res = await fetch(`${apiUrl}/api/v1/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -100,7 +101,7 @@ export const useAuthStore = defineStore("auth", () => {
     if (!token.value) return;
 
     try {
-      const res = await fetch("/api/v1/logout", {
+      const res = await fetch(`${apiUrl}/api/v1/logout`, {
         method: "POST",
         headers: {
           authorization: `Bearer ${token.value}`,
@@ -135,7 +136,7 @@ export const useAuthStore = defineStore("auth", () => {
     token.value = savedToken;
 
     try {
-      const res = await fetch("/api/v1/user", {
+      const res = await fetch(`${apiUrl}/api/v1/user`, {
         headers: {
           authorization: `Bearer ${token.value}`,
         },

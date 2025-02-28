@@ -1,25 +1,21 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import axios from 'axios';
 
-// Create an axios instance with base configuration
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const apiUrl = import.meta.env.VITE_BACKEND_URL; // Backend URL from .env
 
-// Types
+// ======================
+// Type Definitions
+// ======================
+
 export interface Contact {
+  [x: string]: any;
   id: string;
   name: string;
   email: string;
   phone: string;
   subject: string;
   message: string;
-  status: 'new' | 'in_progress' | 'resolved' | 'archived';
+  status: 'pending' | 'completed';
   priority: 'high' | 'medium' | 'low';
   type: 'general' | 'support' | 'feedback' | 'partnership';
   receivedDate: string;
@@ -49,7 +45,7 @@ export interface CreateContactDTO {
 }
 
 export interface UpdateContactDTO extends Partial<CreateContactDTO> {
-  status?: 'new' | 'in_progress' | 'resolved' | 'archived';
+  status?: 'pending' | 'completed';
   response?: {
     text: string;
     respondentName: string;
@@ -69,7 +65,7 @@ export interface ContactsResponse {
 
 export interface ContactFilters {
   search?: string;
-  status?: 'new' | 'in_progress' | 'resolved' | 'archived';
+  status?: 'pending' | 'completed';
   priority?: 'high' | 'medium' | 'low';
   type?: 'general' | 'support' | 'feedback' | 'partnership';
   startDate?: string;
@@ -80,60 +76,9 @@ export interface ContactFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-// Mock data
-const mockContacts: Contact[] = [
-  {
-    id: '1',
-    name: 'John Smith',
-    email: 'john.smith@example.com',
-    phone: '(555) 123-4567',
-    subject: 'Question about catering services',
-    message: 'I would like to inquire about your catering services for a corporate event next month.',
-    status: 'new',
-    priority: 'high',
-    type: 'general',
-    receivedDate: '2024-03-19',
-    lastUpdated: '2024-03-19T10:00:00Z',
-    timeline: [
-      {
-        date: '2024-03-19T10:00:00Z',
-        action: 'received',
-        notes: 'New contact form submission',
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Sarah Johnson',
-    email: 'sarah.j@example.com',
-    phone: '(555) 987-6543',
-    subject: 'Website feedback',
-    message: 'I love your new website design, but I noticed a few broken links in the menu section.',
-    status: 'in_progress',
-    priority: 'medium',
-    type: 'feedback',
-    receivedDate: '2024-03-18',
-    lastUpdated: '2024-03-19T09:30:00Z',
-    response: {
-      text: 'Thank you for bringing this to our attention. We are working on fixing the broken links.',
-      date: '2024-03-19T09:30:00Z',
-      respondentName: 'Admin',
-    },
-    timeline: [
-      {
-        date: '2024-03-18T15:00:00Z',
-        action: 'received',
-        notes: 'New contact form submission',
-      },
-      {
-        date: '2024-03-19T09:30:00Z',
-        action: 'response_added',
-        notes: 'Response added to contact',
-        user: 'Admin',
-      },
-    ],
-  },
-];
+// ======================
+// Contacts Store
+// ======================
 
 export const useContactsStore = defineStore('contacts', () => {
   // State
@@ -148,72 +93,50 @@ export const useContactsStore = defineStore('contacts', () => {
   });
 
   // Getters
-  const newContacts = () => contacts.value.filter(contact => contact.status === 'new');
-  const inProgressContacts = () => contacts.value.filter(contact => contact.status === 'in_progress');
-  const resolvedContacts = () => contacts.value.filter(contact => contact.status === 'resolved');
-  const highPriorityContacts = () => contacts.value.filter(contact => contact.priority === 'high');
+  const newContacts = () => contacts.value.filter(c => c.status === 'pending');
+  const inProgressContacts = () => contacts.value.filter(c => c.status === 'completed');
 
   // Actions
+
   /**
-   * Fetch contacts with optional filters
+   * Fetch contacts using the token.
+   * Endpoint: GET /api/v1/contacts
    */
   const fetchContacts = async (filters?: ContactFilters) => {
     loading.value = true;
     error.value = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token not found in localStorage');
 
-      let filteredData = [...mockContacts];
-      
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredData = filteredData.filter(contact => 
-          contact.name.toLowerCase().includes(searchLower) ||
-          contact.email.toLowerCase().includes(searchLower) ||
-          contact.subject.toLowerCase().includes(searchLower) ||
-          contact.message.toLowerCase().includes(searchLower)
-        );
+      // Build query parameters if filters exist
+      const params = new URLSearchParams();
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined) params.append(key, String(value));
+        });
       }
-
-      if (filters?.status) {
-        filteredData = filteredData.filter(contact => 
-          contact.status === filters.status
-        );
+      const url = `${apiUrl}/api/v1/contacts?${params.toString()}`;
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      if (filters?.priority) {
-        filteredData = filteredData.filter(contact => 
-          contact.priority === filters.priority
-        );
-      }
-
-      if (filters?.type) {
-        filteredData = filteredData.filter(contact => 
-          contact.type === filters.type
-        );
-      }
-
-      if (filters?.startDate) {
-        filteredData = filteredData.filter(contact => 
-          contact.receivedDate >= filters.startDate!
-        );
-      }
-
-      if (filters?.endDate) {
-        filteredData = filteredData.filter(contact => 
-          contact.receivedDate <= filters.endDate!
-        );
-      }
-
-      contacts.value = filteredData;
+      // Assume API returns an array of contacts
+      const data: Contact[] = await response.json();
+      contacts.value = data;
       meta.value = {
-        total: filteredData.length,
+        total: data.length,
         page: filters?.page || 1,
         perPage: filters?.perPage || 10,
-        totalPages: Math.ceil(filteredData.length / (filters?.perPage || 10)),
+        totalPages: Math.ceil(data.length / (filters?.perPage || 10)),
       };
-    } catch (e) {
-      error.value = 'Failed to fetch contacts';
+    } catch (e: any) {
+      error.value = e.message || 'Failed to fetch contacts';
       throw e;
     } finally {
       loading.value = false;
@@ -221,32 +144,33 @@ export const useContactsStore = defineStore('contacts', () => {
   };
 
   /**
-   * Add new contact
+   * Add new contact.
+   * Endpoint: POST /api/v1/contacts
    */
-  const addContact = async (contact: CreateContactDTO) => {
+  const addContact = async (contactData: CreateContactDTO) => {
     loading.value = true;
     error.value = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const newContact: Contact = {
-        ...contact,
-        id: Math.random().toString(36).substr(2, 9),
-        status: 'new',
-        priority: contact.priority || 'medium',
-        receivedDate: new Date().toISOString().split('T')[0],
-        lastUpdated: new Date().toISOString(),
-        timeline: [
-          {
-            date: new Date().toISOString(),
-            action: 'received',
-            notes: 'New contact form submission',
-          },
-        ],
-      };
-      contacts.value.push(newContact);
-      return newContact;
-    } catch (e) {
-      error.value = 'Failed to add contact';
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token not found in localStorage');
+
+      const payload = { ...contactData };
+      const response = await fetch(`${apiUrl}/api/v1/contacts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: Contact = await response.json();
+      contacts.value.push(data);
+      return data;
+    } catch (e: any) {
+      error.value = e.message || 'Failed to add contact';
       throw e;
     } finally {
       loading.value = false;
@@ -254,56 +178,37 @@ export const useContactsStore = defineStore('contacts', () => {
   };
 
   /**
-   * Update existing contact
+   * Update existing contact.
+   * Endpoint: PATCH /api/v1/contacts/:id
    */
   const updateContact = async (id: string, updates: UpdateContactDTO) => {
     loading.value = true;
     error.value = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const index = contacts.value.findIndex(contact => contact.id === id);
-      if (index === -1) throw new Error('Contact not found');
-      
-      const currentContact = contacts.value[index];
-      const updatedContact = {
-        ...currentContact,
-        ...updates,
-        lastUpdated: new Date().toISOString(),
-      };
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token not found in localStorage');
 
-      // Add status change to timeline if status is updated
-      if (updates.status && updates.status !== currentContact.status) {
-        updatedContact.timeline = [
-          ...(currentContact.timeline || []),
-          {
-            date: new Date().toISOString(),
-            action: 'status_changed',
-            notes: `Status updated to ${updates.status}`,
-          },
-        ];
+      // Use PUT if your API expects a full update, or PATCH for partial update.
+      const response = await fetch(`${apiUrl}/api/v1/contacts/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      // Add response to timeline if provided
-      if (updates.response) {
-        updatedContact.response = {
-          ...updates.response,
-          date: new Date().toISOString(),
-        };
-        updatedContact.timeline = [
-          ...(currentContact.timeline || []),
-          {
-            date: new Date().toISOString(),
-            action: 'response_added',
-            notes: 'Response added to contact',
-            user: updates.response.respondentName,
-          },
-        ];
+      const updated: Contact = await response.json();
+      console.log(`response ${response.body}`)
+      const index = contacts.value.findIndex(c => c.id === id);
+      if (index !== -1) {
+        contacts.value[index] = updated;
       }
-      
-      contacts.value[index] = updatedContact;
-      return updatedContact;
-    } catch (e) {
-      error.value = 'Failed to update contact';
+      return updated;
+    } catch (e: any) {
+      error.value = e.message || 'Failed to update contact';
       throw e;
     } finally {
       loading.value = false;
@@ -311,16 +216,29 @@ export const useContactsStore = defineStore('contacts', () => {
   };
 
   /**
-   * Delete contact
+   * Delete contact.
+   * Endpoint: DELETE /api/v1/contacts/:id
    */
   const deleteContact = async (id: string) => {
     loading.value = true;
     error.value = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      contacts.value = contacts.value.filter(contact => contact.id !== id);
-    } catch (e) {
-      error.value = 'Failed to delete contact';
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token not found in localStorage');
+
+      const response = await fetch(`${apiUrl}/api/v1/contacts/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      contacts.value = contacts.value.filter(c => c.id !== id);
+    } catch (e: any) {
+      error.value = e.message || 'Failed to delete contact';
       throw e;
     } finally {
       loading.value = false;
@@ -328,32 +246,36 @@ export const useContactsStore = defineStore('contacts', () => {
   };
 
   /**
-   * Export contacts data
+   * Export contacts data.
+   * Endpoint: GET /api/v1/contacts/export?format=csv|xlsx
    */
   const exportContacts = async (format: 'csv' | 'xlsx' = 'csv') => {
     loading.value = true;
     error.value = null;
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Mock CSV data
-      const csvContent = contacts.value
-        .map(contact => 
-          `${contact.name},${contact.email},${contact.phone},${contact.subject},${contact.status},${contact.priority},${contact.receivedDate}`
-        )
-        .join('\n');
-      
-      // Create download
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token not found in localStorage');
+
+      const url = `${apiUrl}/api/v1/contacts/export?format=${format}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
+      link.href = downloadUrl;
       link.setAttribute('download', `contacts.${format}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (e) {
-      error.value = 'Failed to export contacts';
+    } catch (e: any) {
+      error.value = e.message || 'Failed to export contacts';
       throw e;
     } finally {
       loading.value = false;
@@ -361,19 +283,12 @@ export const useContactsStore = defineStore('contacts', () => {
   };
 
   return {
-    // State
     contacts,
     loading,
     error,
     meta,
-    
-    // Getters
     newContacts,
     inProgressContacts,
-    resolvedContacts,
-    highPriorityContacts,
-    
-    // Actions
     fetchContacts,
     addContact,
     updateContact,

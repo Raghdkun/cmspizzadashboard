@@ -1,7 +1,8 @@
 // Gallery types
 export interface GalleryImage {
   id: string;
-  url: string;
+  file_path: string;
+  thumbnail_path: string; 
   name: string;
   size: string;
   type: string;

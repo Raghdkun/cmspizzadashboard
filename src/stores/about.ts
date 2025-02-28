@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
+const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
 
 // ======================
 // Type Definitions
@@ -120,7 +121,7 @@ export const useAboutStore = defineStore('about', () => {
     try {
       const token = localStorage.getItem('token');
       // Fetch milestones
-      const msRes = await fetch('/api/v1/milestones', {
+      const msRes = await fetch(`${apiUrl}/api/v1/milestones`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -133,7 +134,7 @@ export const useAboutStore = defineStore('about', () => {
       milestones.value = msData.map(mapMilestone);
 
       // Fetch team members (assuming API returns an array)
-      const tmRes = await fetch('/api/v1/team-members', {
+      const tmRes = await fetch(`${apiUrl}/api/v1/team-members`, {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -158,7 +159,7 @@ export const useAboutStore = defineStore('about', () => {
     error.value = null;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/milestones', {
+      const response = await fetch(`${apiUrl}/api/v1/milestones`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -186,7 +187,7 @@ export const useAboutStore = defineStore('about', () => {
     error.value = null;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/v1/milestones/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/milestones/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -217,7 +218,7 @@ export const useAboutStore = defineStore('about', () => {
     error.value = null;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/v1/milestones/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/milestones/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +254,7 @@ export const useAboutStore = defineStore('about', () => {
         status: member.status, // if you store status too
       };
   
-      const response = await fetch('/api/v1/team-members', {
+      const response = await fetch(`${apiUrl}/api/v1/team-members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -293,7 +294,7 @@ export const useAboutStore = defineStore('about', () => {
         status: updates.status,
       };
   
-      const response = await fetch(`/api/v1/team-members/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/team-members/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -325,7 +326,7 @@ export const useAboutStore = defineStore('about', () => {
     error.value = null;
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/v1/team-members/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/team-members/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

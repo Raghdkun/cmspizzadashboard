@@ -1,40 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { BellIcon, CheckCircleIcon, ExclamationCircleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+import { onMounted } from 'vue';
+import { BellIcon } from '@heroicons/vue/24/outline';
 import { useNotificationsStore } from '../stores/notifications';
 
 const notificationsStore = useNotificationsStore();
 
 onMounted(async () => {
-  await notificationsStore.fetchNotifications('admin');
+  await notificationsStore.fetchNotifications();
 });
-
-// Get notification icon based on type
-const getNotificationIcon = (type: string) => {
-  switch (type) {
-    case 'success':
-      return CheckCircleIcon;
-    case 'warning':
-    case 'error':
-      return ExclamationCircleIcon;
-    default:
-      return InformationCircleIcon;
-  }
-};
-
-// Get notification color based on type
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'success':
-      return 'text-green-500 dark:text-green-400';
-    case 'warning':
-      return 'text-yellow-500 dark:text-yellow-400';
-    case 'error':
-      return 'text-red-500 dark:text-red-400';
-    default:
-      return 'text-blue-500 dark:text-blue-400';
-  }
-};
 
 // Format timestamp to relative time
 const formatTime = (timestamp: string) => {
@@ -50,6 +23,22 @@ const formatTime = (timestamp: string) => {
   
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
+};
+
+const handleMarkAsRead = async (id: string) => {
+  try {
+    await notificationsStore.markAsRead(id);
+  } catch (error) {
+    console.error('Failed to mark notification as read:', error);
+  }
+};
+
+const handleMarkAllAsRead = async () => {
+  try {
+    await notificationsStore.markAllAsRead();
+  } catch (error) {
+    console.error('Failed to mark all notifications as read:', error);
+  }
 };
 </script>
 
@@ -83,7 +72,7 @@ const formatTime = (timestamp: string) => {
       <div v-else>
         <div class="p-4 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
           <span class="text-sm text-neutral-500 dark:text-neutral-400">
-            {{ notificationsStore.notifications.length }} Notifications
+            {{ notificationsStore.meta.count }} Notifications ({{ notificationsStore.meta.unread }} unread)
           </span>
           <button
             v-if="notificationsStore.unreadCount() > 0"
@@ -99,37 +88,26 @@ const formatTime = (timestamp: string) => {
             v-for="notification in notificationsStore.notifications"
             :key="notification.id"
             class="p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
-            :class="{ 'bg-primary-50 dark:bg-primary-900/20': !notification.read }"
+            :class="{ 'bg-primary-50 dark:bg-primary-900/20': !notification.is_read }"
           >
             <div class="flex gap-4">
-              <component
-                :is="getNotificationIcon(notification.type)"
-                class="w-6 h-6 flex-shrink-0"
-                :class="getNotificationColor(notification.type)"
-              />
               <div class="flex-1">
                 <div class="flex justify-between items-start">
-                  <div>
-                    <h3 class="text-sm font-medium text-neutral-900 dark:text-white">
-                      {{ notification.title }}
-                    </h3>
-                    <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                      {{ notification.message }}
-                    </p>
-                  </div>
-                  <span class="text-xs text-neutral-500 dark:text-neutral-400">
-                    {{ formatTime(notification.timestamp) }}
+                  <p class="text-sm text-neutral-900 dark:text-white">
+                    {{ notification.message }}
+                  </p>
+                  <span class="text-xs text-neutral-500 dark:text-neutral-400 ml-4">
+                    {{ formatTime(notification.created_at) }}
                   </span>
                 </div>
                 
-                <div v-if="notification.actions" class="mt-3 flex gap-3">
+                <div v-if="!notification.is_read" class="mt-2">
                   <button
-                    v-for="action in notification.actions"
-                    :key="action.label"
-                    class="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
-                    @click="$emit(action.action, notification)"
+                    v-if="!notification.is_read"
+                    @click.stop="handleMarkAsRead(notification.id)"
+                    class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
                   >
-                    {{ action.label }}
+                    Mark as read
                   </button>
                 </div>
               </div>

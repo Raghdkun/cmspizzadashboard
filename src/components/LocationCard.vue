@@ -127,6 +127,8 @@ const handleLocationUpdated = async () => {
 
     <!-- Delete Confirmation Modal -->
     <DeleteConfirmationModal
+      title="Delete Location"
+      :message="`Are you sure you want to delete ${location.name}?`"
       v-if="showDeleteConfirm"
       :location-name="location.name"
       @confirm="confirmDelete"

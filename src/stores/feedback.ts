@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
+const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
 
 // ======================
 // Type Definitions
@@ -140,7 +141,7 @@ export const useFeedbackStore = defineStore('feedback', () => {
           }
         });
       }
-      const url = `/api/v1/feedback/admin?${params.toString()}`;
+      const url = `${apiUrl}/api/v1/feedback/admin?${params.toString()}`;
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -186,7 +187,7 @@ export const useFeedbackStore = defineStore('feedback', () => {
         comment: feedbackData.comment,
       };
 
-      const response = await fetch('/api/v1/feedback/admin', {
+      const response = await fetch(`${apiUrl}/api/v1/feedback/admin`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -233,7 +234,7 @@ export const useFeedbackStore = defineStore('feedback', () => {
       }
 
       // Use PATCH (or PUT if your API specifically requires PUT)
-      const response = await fetch(`/api/v1/feedback/admin/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/feedback/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -270,7 +271,7 @@ export const useFeedbackStore = defineStore('feedback', () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Token not found in localStorage');
 
-      const response = await fetch(`/api/v1/feedback/admin/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/feedback/admin/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -301,7 +302,7 @@ export const useFeedbackStore = defineStore('feedback', () => {
       if (!token) throw new Error('Token not found in localStorage');
 
       const payload = { isHelpful };
-      const response = await fetch(`/api/v1/feedback/admin/${id}/helpful`, {
+      const response = await fetch(`${apiUrl}/api/v1/feedback/admin/${id}/helpful`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

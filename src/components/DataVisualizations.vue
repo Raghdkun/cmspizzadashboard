@@ -45,7 +45,7 @@ const chartOptions = {
       beginAtZero: true,
       max: 100,
       ticks: {
-        callback: (value) => {
+        callback: (value :any) => {
           // Format as percentage for completion rate
           if (value > 5) return value + '%';
           // Format as rating for satisfaction
@@ -71,7 +71,22 @@ const chartOptions = {
 <template>
   <div class="bg-white dark:bg-neutral-800 p-6 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700">
     <div class="h-80">
-      <Bar :data="storePerformanceData" :options="chartOptions" />
+      <Bar 
+        :data="storePerformanceData" 
+        :options="{
+          ...chartOptions,
+          plugins: {
+            ...chartOptions.plugins,
+            title: {
+              ...chartOptions.plugins.title,
+              font: {
+                size: 16,
+                weight: 'bold' as const
+              }
+            }
+          }
+        }" 
+      />
     </div>
   </div>
 </template>

@@ -191,7 +191,7 @@
         class="group relative aspect-square rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-primary-500 dark:hover:border-primary-500 transition-colors"
       >
         <img
-          :src="image.url"
+          :src="image.file_path"
           :alt="image.name"
           class="w-full h-full object-cover"
         />
@@ -255,12 +255,17 @@ const dragActive = ref(false);
 const error = ref('');
 const showDeleteConfirm = ref(false);
 const selectedImageId = ref<string | null>(null);
+  const image = { url: 'api.pnepizza.com/image.url' };
 
+const formattedImageUrl = computed(() => {
+  return image.url.startsWith('http') ? image.url : `https://${image.url}`;
+});
 // Search and filter state
 const searchQuery = ref('');
 const selectedTags = ref<string[]>([]);
 const sortBy = ref<GalleryFilters['sortBy']>('date');
 const sortOrder = ref<GalleryFilters['sortOrder']>('desc');
+  const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
 
 // Fetch images when component is mounted
 onMounted(async () => {
@@ -326,7 +331,7 @@ const handleFiles = async (files: FileList) => {
   for (const file of files) {
     try {
       await galleryStore.uploadImage(file);
-    } catch (e) {
+    } catch (e :any) {
       error.value = e.message || 'Failed to upload file';
     }
   }

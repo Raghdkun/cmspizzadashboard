@@ -4,9 +4,6 @@ import { useProfileStore } from '../stores/profile';
 import FormGroup from '../components/ui/FormGroup.vue';
 import FormSection from '../components/ui/FormSection.vue';
 import Input from '../components/ui/Input.vue';
-import Textarea from '../components/ui/Textarea.vue';
-import Select from '../components/ui/Select.vue';
-import Switch from '../components/ui/Switch.vue';
 import Button from '../components/ui/Button.vue';
 
 const profileStore = useProfileStore();
@@ -16,9 +13,8 @@ const error = ref('');
 
 // Password change form
 const passwordForm = ref({
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: '',
+  password: '',
+  password_confirmation: '',
 });
 
 // Load profile when component is mounted
@@ -40,13 +36,6 @@ const handleUpdateProfile = async () => {
     await profileStore.updateProfile({
       name: profileStore.profile?.name,
       email: profileStore.profile?.email,
-      phone: profileStore.profile?.phone,
-      title: profileStore.profile?.title,
-      department: profileStore.profile?.department,
-      location: profileStore.profile?.location,
-      bio: profileStore.profile?.bio,
-      timezone: profileStore.profile?.timezone,
-      language: profileStore.profile?.language,
     });
     
     success.value = 'Profile updated successfully';
@@ -63,24 +52,23 @@ const handleUpdateProfile = async () => {
 // Update password
 const handleUpdatePassword = async () => {
   try {
-    if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
-      error.value = 'New passwords do not match';
+    if (passwordForm.value.password !== passwordForm.value.password_confirmation) {
+      error.value = 'Passwords do not match';
       return;
     }
 
     loading.value = true;
     error.value = '';
     
-    await profileStore.updatePassword({
-      currentPassword: passwordForm.value.currentPassword,
-      newPassword: passwordForm.value.newPassword,
+    await profileStore.updateProfile({
+      password: passwordForm.value.password,
+      password_confirmation: passwordForm.value.password_confirmation,
     });
     
     // Clear password form
     passwordForm.value = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
+      password: '',
+      password_confirmation: '',
     };
     
     success.value = 'Password updated successfully';
@@ -89,46 +77,6 @@ const handleUpdatePassword = async () => {
     }, 3000);
   } catch (e) {
     error.value = 'Failed to update password';
-  } finally {
-    loading.value = false;
-  }
-};
-
-// Update notification preferences
-const handleUpdatePreferences = async () => {
-  try {
-    loading.value = true;
-    error.value = '';
-    
-    await profileStore.updatePreferences(profileStore.profile?.preferences || {});
-    
-    success.value = 'Preferences updated successfully';
-    setTimeout(() => {
-      success.value = '';
-    }, 3000);
-  } catch (e) {
-    error.value = 'Failed to update preferences';
-  } finally {
-    loading.value = false;
-  }
-};
-
-// Update security settings
-const handleUpdateSecurity = async () => {
-  try {
-    loading.value = true;
-    error.value = '';
-    
-    await profileStore.updateSecurity({
-      twoFactorEnabled: profileStore.profile?.security.twoFactorEnabled,
-    });
-    
-    success.value = 'Security settings updated successfully';
-    setTimeout(() => {
-      success.value = '';
-    }, 3000);
-  } catch (e) {
-    error.value = 'Failed to update security settings';
   } finally {
     loading.value = false;
   }
@@ -143,7 +91,7 @@ const handleUpdateSecurity = async () => {
         Profile Settings
       </h1>
       <p class="text-neutral-500 dark:text-neutral-400">
-        Manage your account settings and preferences
+        Manage your account settings
       </p>
     </div>
 
@@ -171,12 +119,6 @@ const handleUpdateSecurity = async () => {
                 <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary-hover text-white flex items-center justify-center text-2xl font-semibold">
                   {{ profileStore.profile.name.charAt(0) }}
                 </div>
-                <Button
-                  variant="secondary"
-                  class="w-full sm:w-auto"
-                >
-                  Change Avatar
-                </Button>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -197,47 +139,7 @@ const handleUpdateSecurity = async () => {
                     required
                   />
                 </FormGroup>
-
-                <!-- Phone -->
-                <FormGroup label="Phone">
-                  <Input
-                    v-model="profileStore.profile.phone"
-                    type="tel"
-                  />
-                </FormGroup>
-
-                <!-- Title -->
-                <FormGroup label="Title">
-                  <Input
-                    v-model="profileStore.profile.title"
-                    type="text"
-                  />
-                </FormGroup>
-
-                <!-- Department -->
-                <FormGroup label="Department">
-                  <Input
-                    v-model="profileStore.profile.department"
-                    type="text"
-                  />
-                </FormGroup>
-
-                <!-- Location -->
-                <FormGroup label="Location">
-                  <Input
-                    v-model="profileStore.profile.location"
-                    type="text"
-                  />
-                </FormGroup>
               </div>
-
-              <!-- Bio -->
-              <FormGroup label="Bio">
-                <Textarea
-                  v-model="profileStore.profile.bio"
-                  rows="4"
-                />
-              </FormGroup>
 
               <!-- Save button -->
               <div class="mt-6 flex justify-end">
@@ -257,26 +159,19 @@ const handleUpdateSecurity = async () => {
       <div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700">
         <form @submit.prevent="handleUpdatePassword" class="p-6">
           <FormSection title="Change Password" description="Update your password">
-            <FormGroup label="Current Password" required>
-              <Input
-                v-model="passwordForm.currentPassword"
-                type="password"
-                required
-              />
-            </FormGroup>
-
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormGroup label="New Password" required>
                 <Input
-                  v-model="passwordForm.newPassword"
+                  v-model="passwordForm.password"
                   type="password"
                   required
+                  minlength="8"
                 />
               </FormGroup>
 
               <FormGroup label="Confirm New Password" required>
                 <Input
-                  v-model="passwordForm.confirmPassword"
+                  v-model="passwordForm.password_confirmation"
                   type="password"
                   required
                 />
@@ -290,92 +185,6 @@ const handleUpdateSecurity = async () => {
                 :loading="loading"
               >
                 Update Password
-              </Button>
-            </div>
-          </FormSection>
-        </form>
-      </div>
-
-      <!-- Preferences Section -->
-      <div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700">
-        <form @submit.prevent="handleUpdatePreferences" class="p-6">
-          <FormSection title="Notification Preferences" description="Manage your notification settings">
-            <div class="space-y-4">
-              <Switch
-                v-model="profileStore.profile.preferences.emailNotifications"
-                label="Email notifications"
-                description="Receive notifications via email"
-              />
-
-              <Switch
-                v-model="profileStore.profile.preferences.pushNotifications"
-                label="Push notifications"
-                description="Receive push notifications in your browser"
-              />
-
-              <Switch
-                v-model="profileStore.profile.preferences.marketingEmails"
-                label="Marketing emails"
-                description="Receive updates about new features and announcements"
-              />
-            </div>
-
-            <!-- Save button -->
-            <div class="mt-6 flex justify-end">
-              <Button
-                type="submit"
-                :loading="loading"
-              >
-                Save Preferences
-              </Button>
-            </div>
-          </FormSection>
-        </form>
-      </div>
-
-      <!-- Security Section -->
-      <div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700">
-        <form @submit.prevent="handleUpdateSecurity" class="p-6">
-          <FormSection title="Security Settings" description="Manage your account security">
-            <Switch
-              v-model="profileStore.profile.security.twoFactorEnabled"
-              label="Two-Factor Authentication"
-              description="Add an extra layer of security to your account"
-            />
-
-            <!-- Login History -->
-            <div class="mt-6">
-              <h4 class="text-sm font-medium text-neutral-900 dark:text-white mb-4">
-                Recent Login Activity
-              </h4>
-              <div class="space-y-4">
-                <div
-                  v-for="login in profileStore.profile.security.loginHistory"
-                  :key="login.date"
-                  class="flex justify-between items-center text-sm"
-                >
-                  <div>
-                    <p class="font-medium text-neutral-900 dark:text-white">
-                      {{ login.device }}
-                    </p>
-                    <p class="text-neutral-500 dark:text-neutral-400">
-                      {{ login.ip }}
-                    </p>
-                  </div>
-                  <span class="text-neutral-500 dark:text-neutral-400">
-                    {{ new Date(login.date).toLocaleString() }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Save button -->
-            <div class="mt-6 flex justify-end">
-              <Button
-                type="submit"
-                :loading="loading"
-              >
-                Save Security Settings
               </Button>
             </div>
           </FormSection>

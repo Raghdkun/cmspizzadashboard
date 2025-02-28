@@ -1,6 +1,9 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
+const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
+
+
 // ======================
 // Type Definitions
 // ======================
@@ -133,7 +136,7 @@ export const useInquiriesStore = defineStore('inquiries', () => {
           }
         });
       }
-      const url = `/api/v1/acquisitions?${params.toString()}`;
+      const url = `${apiUrl}/api/v1/acquisitions?${params.toString()}`;
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -178,7 +181,7 @@ export const useInquiriesStore = defineStore('inquiries', () => {
         phone: inquiryData.phone,
       };
 
-      const response = await fetch('/api/v1/acquisitions', {
+      const response = await fetch(`${apiUrl}/api/v1/acquisitions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,7 +223,7 @@ export const useInquiriesStore = defineStore('inquiries', () => {
       if (updates.phone !== undefined) payload.phone = updates.phone;
       if (updates.status !== undefined) payload.status = updates.status;
 
-      const response = await fetch(`/api/v1/acquisitions/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/acquisitions/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -257,7 +260,7 @@ export const useInquiriesStore = defineStore('inquiries', () => {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Token not found in localStorage');
 
-      const response = await fetch(`/api/v1/acquisitions/${id}`, {
+      const response = await fetch(`${apiUrl}/api/v1/acquisitions/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -313,7 +316,7 @@ export const useInquiriesStore = defineStore('inquiries', () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('Token not found in localStorage');
-      const url = `/api/v1/acquisitions/export?format=${format}`;
+      const url = `${apiUrl}/api/v1/acquisitions/export?format=${format}`;
       const response = await fetch(url, {
         method: 'GET',
         headers: {

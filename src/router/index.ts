@@ -52,13 +52,6 @@ const router = createRouter({
 
         },
         {
-          path: 'events',
-          name: 'events',
-          component: () => import('../views/EventsView.vue'),
-          meta: { requiresAuth: true },
-
-        },
-        {
           path: 'feedback',
           name: 'feedback',
           component: () => import('../views/FeedbackView.vue'),
@@ -98,8 +91,7 @@ const router = createRouter({
           name: 'settings',
           component: () => import('../views/SettingsView.vue'),
           meta: { requiresAuth: true },
-
-        },
+    },
         {
           path: 'gallery',
           name: 'gallery',

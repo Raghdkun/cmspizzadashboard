@@ -1,188 +1,154 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-// Define interfaces for each settings section
-interface WebsiteMetadata {
-  title: string;
+// Define types for website settings and API responses
+export interface WebsiteSettings {
+  website_title: string;
   description: string;
   keywords: string;
-  twitterHandle: string;
-  analyticsId: string;
-  mapsApiKey: string;
+  google_analytics_id: string;
+  Google_Maps_API_Key: string;
+  logo_image: string;
+  instagram_url: string;
+  facebook_url: string;
 }
 
-interface SecuritySettings {
-  twoFactorAuth: boolean;
-  sessionTimeout: number;
-  passwordExpiration: number;
-}
-
-interface BackupSettings {
-  autoBackup: boolean;
-  backupFrequency: 'daily' | 'weekly' | 'monthly';
-  retentionPeriod: number;
-}
-
-interface ContentSettings {
-  enableComments: boolean;
-  moderateComments: boolean;
-  maxUploadSize: number;
-}
-
-interface PaymentSettings {
-  currency: string;
-  taxRate: number;
-  minimumOrder: number;
+export interface SettingsResponse {
+  success: boolean;
+  data: WebsiteSettings;
 }
 
 export const useSettingsStore = defineStore('settings', () => {
-  // State
-  const metadata = ref<WebsiteMetadata>({
-    title: 'PNE Pizza - Quality Pizza & Community Service',
-    description: 'Your local pizza restaurant committed to serving the community with quality food and exceptional service.',
-    keywords: 'pizza, community service, love kitchen, restaurant, local business',
-    twitterHandle: '@PNEPizza',
-    analyticsId: '',
-    mapsApiKey: '',
+  // Start with empty settings since we will fetch the data from the API
+  const settings = ref<WebsiteSettings>({
+    website_title: '',
+    description: '',
+    keywords: '',
+    google_analytics_id: '',
+    Google_Maps_API_Key: '',
+    logo_image: '',
+    instagram_url: '',
+    facebook_url: ''
   });
 
-  const security = ref<SecuritySettings>({
-    twoFactorAuth: false,
-    sessionTimeout: 30,
-    passwordExpiration: 90,
-  });
+  // Loading state for spinner functionality
+  const loading = ref<boolean>(false);
 
-  const backup = ref<BackupSettings>({
-    autoBackup: true,
-    backupFrequency: 'daily',
-    retentionPeriod: 30,
-  });
-
-  const content = ref<ContentSettings>({
-    enableComments: true,
-    moderateComments: true,
-    maxUploadSize: 10,
-  });
-
-  const payment = ref<PaymentSettings>({
-    currency: 'USD',
-    taxRate: 8.5,
-    minimumOrder: 10.00,
-  });
-
-  // Actions
-  const updateMetadata = async (updates: Partial<WebsiteMetadata>) => {
-    validateMetadata(updates);
-    metadata.value = { ...metadata.value, ...updates };
-    await saveSettings();
-  };
-
-  const updateSecurity = async (updates: Partial<SecuritySettings>) => {
-    validateSecurity(updates);
-    security.value = { ...security.value, ...updates };
-    await saveSettings();
-  };
-
-  const updateBackup = async (updates: Partial<BackupSettings>) => {
-    validateBackup(updates);
-    backup.value = { ...backup.value, ...updates };
-    await saveSettings();
-  };
-
-  const updateContent = async (updates: Partial<ContentSettings>) => {
-    validateContent(updates);
-    content.value = { ...content.value, ...updates };
-    await saveSettings();
-  };
-
-  const updatePayment = async (updates: Partial<PaymentSettings>) => {
-    validatePayment(updates);
-    payment.value = { ...payment.value, ...updates };
-    await saveSettings();
-  };
-
-  // Helper function to save settings
-  const saveSettings = async () => {
-    const settings = {
-      metadata: metadata.value,
-      security: security.value,
-      backup: backup.value,
-      content: content.value,
-      payment: payment.value,
-    };
-    localStorage.setItem('settings', JSON.stringify(settings));
-  };
-
-  // Load settings
-  const loadSettings = () => {
-    try {
-      const savedSettings = localStorage.getItem('settings');
-      if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        metadata.value = { ...metadata.value, ...settings.metadata };
-        security.value = { ...security.value, ...settings.security };
-        backup.value = { ...backup.value, ...settings.backup };
-        content.value = { ...content.value, ...settings.content };
-        payment.value = { ...payment.value, ...settings.payment };
-      }
-    } catch (error) {
-      console.error('Failed to load settings:', error);
-    }
-  };
-
-  // Validation functions
-  const validateMetadata = (data: Partial<WebsiteMetadata>) => {
-    if (data.title && data.title.length > 60) {
-      throw new Error('Title must be less than 60 characters');
+  // Validate settings before update
+  // Update the validateSettings function to include logo validation
+  const validateSettings = (data: WebsiteSettings) => {
+    if (data.website_title && data.website_title.length > 60) {
+      throw new Error('Website title must be less than 60 characters');
     }
     if (data.description && data.description.length > 160) {
       throw new Error('Description must be less than 160 characters');
     }
+    if (data.logo_image && !isValidUrl(data.logo_image)) {
+      throw new Error('Logo image must be a valid URL');
+    }
   };
-
-  const validateSecurity = (data: Partial<SecuritySettings>) => {
-    if (data.sessionTimeout && (data.sessionTimeout < 5 || data.sessionTimeout > 120)) {
-      throw new Error('Session timeout must be between 5 and 120 minutes');
+  
+  // Add this helper function after the validateSettings function
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
     }
   };
 
-  const validateBackup = (data: Partial<BackupSettings>) => {
-    if (data.retentionPeriod && (data.retentionPeriod < 7 || data.retentionPeriod > 365)) {
-      throw new Error('Retention period must be between 7 and 365 days');
+  // Fetch settings from the API
+  const fetchSettings = async () => {
+    loading.value = true;
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      const apiUrl = import.meta.env.VITE_BACKEND_URL;
+      const response = await fetch(`${apiUrl}/api/v1/settings`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      // Check if the response is JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data: SettingsResponse = await response.json();
+        if (data.success && data.data) {
+          settings.value = data.data;
+        } else {
+          throw new Error('Failed to load settings');
+        }
+      } else {
+        // Get some of the HTML for debugging purposes
+        const text = await response.text();
+        throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+      }
+    } catch (err) {
+      console.error('Error fetching settings:', err);
+      throw err;
+    } finally {
+      loading.value = false;
     }
   };
 
-  const validateContent = (data: Partial<ContentSettings>) => {
-    if (data.maxUploadSize && (data.maxUploadSize < 1 || data.maxUploadSize > 50)) {
-      throw new Error('Maximum upload size must be between 1 and 50 MB');
-    }
-  };
-
-  const validatePayment = (data: Partial<PaymentSettings>) => {
-    if (data.taxRate && (data.taxRate < 0 || data.taxRate > 100)) {
-      throw new Error('Tax rate must be between 0 and 100%');
-    }
-    if (data.minimumOrder && data.minimumOrder < 0) {
-      throw new Error('Minimum order amount cannot be negative');
+  // Update settings via API PUT method
+  const updateSettings = async () => {
+    loading.value = true;
+    try {
+      validateSettings(settings.value);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      const apiUrl = import.meta.env.VITE_BACKEND_URL;
+      
+      // Updated payload to include all fields
+      const payload = {
+        website_title: settings.value.website_title,
+        description: settings.value.description,
+        keywords: settings.value.keywords,
+        google_analytics_id: settings.value.google_analytics_id,
+        Google_Maps_API_Key: settings.value.Google_Maps_API_Key, // Fixed casing to match interface
+        logo_image: settings.value.logo_image,
+        instagram_url: settings.value.instagram_url,
+        facebook_url: settings.value.facebook_url
+      };
+      
+      const response = await fetch(`${apiUrl}/api/v1/settings/1`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      // Ensure we have a JSON response back
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data: SettingsResponse = await response.json();
+        if (!data.success) {
+          throw new Error('Failed to update settings');
+        }
+      } else {
+        const text = await response.text();
+        throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+      }
+    } catch (err) {
+      console.error('Error updating settings:', err);
+      throw err;
+    } finally {
+      loading.value = false;
     }
   };
 
   return {
-    metadata,
-    security,
-    backup,
-    content,
-    payment,
-    updateMetadata,
-    updateSecurity,
-    updateBackup,
-    updateContent,
-    updatePayment,
-    loadSettings,
-    validateMetadata,
-    validateSecurity,
-    validateBackup,
-    validateContent,
-    validatePayment,
+    settings,
+    loading,
+    validateSettings,
+    fetchSettings,
+    updateSettings,
   };
 });

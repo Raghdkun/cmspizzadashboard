@@ -78,18 +78,20 @@ const handleSubmit = async () => {
 
     // Transform formData into the API's expected format
     const locationData: LocationAPIResponse = {
-      name: formData.value.name,
-      image_url: formData.value.imageUrl, // Map `imageUrl` to `image_url`
-      street: formData.value.address,       // Map `address` to `street`
-      city: formData.value.city,
-      state: formData.value.state,
-      zip: formData.value.zipCode,          // Map `zipCode` to `zip`
-      description: formData.value.description,
-      status: formData.value.isActive ? "1" : "0", // Convert boolean to "1" or "0"
-      latitude: formData.value.latitude,    // New: latitude
-      longitude: formData.value.longitude,  // New: longitude
-    
-    };
+    name: formData.value.name,
+    image_url: formData.value.imageUrl, // Map `imageUrl` to `image_url`
+    street: formData.value.address, // Map `address` to `street`
+    city: formData.value.city,
+    state: formData.value.state,
+    zip: formData.value.zipCode, // Map `zipCode` to `zip`
+    description: formData.value.description,
+    status: formData.value.isActive ? "1" : "0", // Convert boolean to "1" or "0"
+    latitude: formData.value.latitude, // New: latitude
+    longitude: formData.value.longitude,
+    id: '',
+    created_at: '',
+    updated_at: ''
+};
 
     // Call the API with the transformed data
     await locationsStore.addLocation(locationData);

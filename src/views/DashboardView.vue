@@ -40,7 +40,7 @@ onMounted(() => {
             {{ greeting }}, {{ user?.name }}
           </h1>
           <p class="text-white/80">
-            Welcome back to your dashboard. Here's what's happening today.
+            Welcome back to the dashboard. Most of the elements bellow are static suggested by AI so if you have any suggestions i'm super ready to apply it.
           </p>
         </div>
       </div>
