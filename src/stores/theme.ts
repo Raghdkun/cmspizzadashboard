@@ -4,11 +4,11 @@ import { defineStore } from 'pinia';
 type Theme = 'light' | 'dark' | 'system';
 
 export const useThemeStore = defineStore('theme', () => {
-  const theme = ref<Theme>(() => {
-    // Try to get theme from localStorage
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    return savedTheme || 'system';
-  });
+  // Fix: Initialize ref with a value, not a function
+  const theme = ref<Theme>(
+    // Get theme from localStorage or use system default
+    localStorage.getItem('theme') as Theme || 'system'
+  );
 
   // Watch for theme changes
   watch(theme, (newTheme) => {

@@ -6,6 +6,7 @@ export interface GalleryImage {
   name: string;
   size: string;
   type: string;
+  url: string; 
   dimensions?: {
     width: number;
     height: number;

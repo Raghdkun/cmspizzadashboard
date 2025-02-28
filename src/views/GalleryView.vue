@@ -29,9 +29,10 @@
         </div>
 
         <!-- Sort -->
+        <!-- Fix for line 34 - Add type casting for sortBy -->
         <div class="w-full sm:w-48">
           <FormGroup>
-            <Select v-model="sortBy">
+            <Select v-model="sortBy as any">
               <option value="">Sort by</option>
               <option value="name">Name</option>
               <option value="date">Date</option>
@@ -39,11 +40,12 @@
             </Select>
           </FormGroup>
         </div>
-
+        
         <!-- Sort order -->
+        <!-- Fix for line 46 - Add type casting for sortOrder -->
         <div class="w-full sm:w-48">
           <FormGroup>
-            <Select v-model="sortOrder">
+            <Select v-model="sortOrder as any">
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </Select>
@@ -55,7 +57,7 @@
       <div class="flex flex-wrap gap-2">
         <button
           v-for="tag in galleryStore.getAllTags()"
-          :key="tag"
+          :key="String(tag)"
           @click="toggleTag(tag)"
           class="px-3 py-1 rounded-full text-sm font-medium transition-colors"
           :class="[
@@ -106,7 +108,7 @@
           <div class="mt-4">
             <Button
               variant="secondary"
-              @click="$refs.fileInput.click()"
+              @click="fileInput && fileInput.click()"
             >
               Select files
             </Button>
@@ -187,7 +189,7 @@
     >
       <div
         v-for="image in filteredImages"
-        :key="image.id"
+        :key="String(image.id)"
         class="group relative aspect-square rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:border-primary-500 dark:hover:border-primary-500 transition-colors"
       >
         <img
@@ -242,7 +244,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { MagnifyingGlassIcon, TrashIcon } from '@heroicons/vue/24/outline';
 import { useGalleryStore } from '../stores/gallery';
-import type { GalleryFilters } from '../types/gallery';
+import type { GalleryFilters, GalleryImage } from '../types/gallery';
 import FormGroup from '../components/ui/FormGroup.vue';
 import Input from '../components/ui/Input.vue';
 import Select from '../components/ui/Select.vue';
@@ -255,17 +257,18 @@ const dragActive = ref(false);
 const error = ref('');
 const showDeleteConfirm = ref(false);
 const selectedImageId = ref<string | null>(null);
-  const image = { url: 'api.pnepizza.com/image.url' };
+// Remove this test image object or update it to match GalleryImage type
+// const image = { url: 'api.pnepizza.com/image.url' };
+// const formattedImageUrl = computed(() => {
+//   return image.url.startsWith('http') ? image.url : `https://${image.url}`;
+// });
 
-const formattedImageUrl = computed(() => {
-  return image.url.startsWith('http') ? image.url : `https://${image.url}`;
-});
 // Search and filter state
 const searchQuery = ref('');
 const selectedTags = ref<string[]>([]);
 const sortBy = ref<GalleryFilters['sortBy']>('date');
 const sortOrder = ref<GalleryFilters['sortOrder']>('desc');
-  const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
+const apiUrl = import.meta.env.VITE_BACKEND_URL; // Get the backend URL from the .env file
 
 // Fetch images when component is mounted
 onMounted(async () => {
@@ -328,7 +331,8 @@ const handleDrop = async (event: DragEvent) => {
 const handleFiles = async (files: FileList) => {
   error.value = '';
 
-  for (const file of files) {
+  // Convert FileList to Array to fix the iterator issue
+  for (const file of Array.from(files)) {
     try {
       await galleryStore.uploadImage(file);
     } catch (e :any) {

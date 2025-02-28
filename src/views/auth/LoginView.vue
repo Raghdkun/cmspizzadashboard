@@ -159,7 +159,7 @@ const handleSubmit = async () => {
             <span v-else>Sign in</span>
           </button>
 
-          <!-- Register link -->
+          <!-- Register link
           <p class="text-center text-sm text-neutral-500 dark:text-neutral-400">
             Don't have an account?
             <router-link
@@ -168,7 +168,7 @@ const handleSubmit = async () => {
             >
               Sign up
             </router-link>
-          </p>
+          </p> -->
         </form>
       </div>
     </div>
