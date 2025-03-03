@@ -20,6 +20,7 @@ export interface Location {
   isActive: boolean;         // Derived from API's "status" ("1" → true, "0" → false)
   createdAt: string;         // Mapped from API's "created_at"
   updatedAt: string;         // Mapped from API's "updated_at"
+  lc_number: string;         // New field for location number
   // Optional additional fields:
   coordinates?: {
     latitude: number;
@@ -49,6 +50,7 @@ export interface UpdateLocationDTO {
   description?: string;
   imageUrl?: string;
   isActive?: boolean;
+  lc_number?: string;        // Add to UpdateLocationDTO
 }
 
 export interface LocationsResponse {
@@ -155,6 +157,7 @@ export const useLocationsStore = defineStore('locations', () => {
       const apiResponse: LocationAPIResponse[] = await response.json();
   
       // Map the API response to our local Location type:
+      // In the fetchLocations function, update the mapping:
       const mappedLocations: Location[] = apiResponse.map((loc) => ({
         id: loc.id.toString(), // Convert id to string if needed
         name: loc.name,
@@ -167,6 +170,7 @@ export const useLocationsStore = defineStore('locations', () => {
         isActive: loc.status === "1",
         createdAt: loc.created_at,
         updatedAt: loc.updated_at,
+        lc_number: loc.lc_number || '',  // Map lc_number from API
         coordinates: loc.latitude && loc.longitude ? {
           latitude: Number(loc.latitude),
           longitude: Number(loc.longitude),
@@ -304,6 +308,7 @@ export const useLocationsStore = defineStore('locations', () => {
     if (updates.state !== undefined) apiUpdates.state = updates.state;
     if (updates.zipCode !== undefined) apiUpdates.zip = updates.zipCode;
     if (updates.description !== undefined) apiUpdates.description = updates.description;
+    if (updates.lc_number !== undefined) apiUpdates.lc_number = updates.lc_number;
     if (updates.isActive !== undefined) {
       apiUpdates.status = updates.isActive ? "1" : "0";
     }
@@ -334,6 +339,7 @@ export const useLocationsStore = defineStore('locations', () => {
     const updatedApiLocation: LocationAPIResponse = await response.json();
     
     // Convert the API response to your local Location shape:
+    // Also update the updatedLocation mapping:
     const updatedLocation: Location = {
       id: updatedApiLocation.id.toString(),
       name: updatedApiLocation.name,
@@ -344,6 +350,7 @@ export const useLocationsStore = defineStore('locations', () => {
       description: updatedApiLocation.description,
       imageUrl: updatedApiLocation.image_url,
       isActive: updatedApiLocation.status === "1",
+      lc_number: updatedApiLocation.lc_number || '',
       // If your API returns these fields, use them; otherwise, preserve local values:
       createdAt: locations.value.find(loc => loc.id === id)?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),

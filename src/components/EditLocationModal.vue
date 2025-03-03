@@ -23,6 +23,7 @@ const locationsStore = useLocationsStore();
 const showGalleryPicker = ref(false);
 
 // Initialize form data with current location values (including coordinates)
+// Update the formData ref to include lc_number
 const formData = ref({
   name: props.location.name,
   address: props.location.address,
@@ -34,6 +35,7 @@ const formData = ref({
   isActive: props.location.isActive,
   latitude: props.location.coordinates?.latitude?.toString() || '',
   longitude: props.location.coordinates?.longitude?.toString() || '',
+  lc_number: props.location.lc_number || '', // Add location number
 });
 
 const loading = ref(false);
@@ -92,6 +94,9 @@ const handleSubmit = async () => {
           <FormSection title="Basic Information" description="Enter the main details about this location">
             <FormGroup label="Name" required>
               <Input v-model="formData.name" placeholder="Enter location name" required />
+            </FormGroup>
+            <FormGroup label="Location Number" required>
+              <Input v-model="formData.lc_number" placeholder="Enter location number" required />
             </FormGroup>
             <FormGroup label="Description">
               <Textarea v-model="formData.description" placeholder="Describe the location" rows="3" />

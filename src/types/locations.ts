@@ -12,6 +12,7 @@ export interface LocationAPIResponse {
   latitude?: string;         // Optional latitude as a string
   longitude?: string;        // Optional longitude as a string
   lc_url?: string | null;    // Optional additional URL field (if any)
+  lc_number: string;
   created_at: string;
   updated_at: string;
 }

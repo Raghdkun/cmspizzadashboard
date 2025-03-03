@@ -19,6 +19,7 @@ const locationsStore = useLocationsStore();
 const showGalleryPicker = ref(false);
 
 // Initialize form data with empty values, including latitude and longitude
+// Update the formData ref to include lc_number
 const formData = ref({
   name: '',
   imageUrl: '/images/default-store.jpg', // Default image
@@ -30,6 +31,7 @@ const formData = ref({
   isActive: true,                        // Active status
   latitude: '',
   longitude: '',
+  lc_number: '',                         // Add location number field
 });
 const loading = ref(false);
 const error = ref('');
@@ -77,22 +79,23 @@ const handleSubmit = async () => {
     error.value = '';
 
     // Transform formData into the API's expected format
+    // Update the locationData transformation to include lc_number
     const locationData: LocationAPIResponse = {
-    name: formData.value.name,
-    image_url: formData.value.imageUrl, // Map `imageUrl` to `image_url`
-    street: formData.value.address, // Map `address` to `street`
-    city: formData.value.city,
-    state: formData.value.state,
-    zip: formData.value.zipCode, // Map `zipCode` to `zip`
-    description: formData.value.description,
-    status: formData.value.isActive ? "1" : "0", // Convert boolean to "1" or "0"
-    latitude: formData.value.latitude, // New: latitude
-    longitude: formData.value.longitude,
-    id: '',
-    created_at: '',
-    updated_at: ''
-};
-
+      name: formData.value.name,
+      image_url: formData.value.imageUrl, // Map `imageUrl` to `image_url`
+      street: formData.value.address, // Map `address` to `street`
+      city: formData.value.city,
+      state: formData.value.state,
+      zip: formData.value.zipCode, // Map `zipCode` to `zip`
+      description: formData.value.description,
+      status: formData.value.isActive ? "1" : "0", // Convert boolean to "1" or "0"
+      latitude: formData.value.latitude, // New: latitude
+      longitude: formData.value.longitude,
+      lc_number: formData.value.lc_number, // Add location number
+      id: '',
+      created_at: '',
+      updated_at: ''
+    };
     // Call the API with the transformed data
     await locationsStore.addLocation(locationData);
 
@@ -165,6 +168,9 @@ onUnmounted(() => {
           <FormSection title="Basic Information" description="Enter the main details about this location">
             <FormGroup label="Name" required>
               <Input v-model="formData.name" placeholder="Enter location name" required />
+            </FormGroup>
+            <FormGroup label="Location Number" required>
+              <Input v-model="formData.lc_number" placeholder="Enter location number" required />
             </FormGroup>
             <FormGroup label="Description">
               <Textarea v-model="formData.description" placeholder="Describe the location" rows="3" />
